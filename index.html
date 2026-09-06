@@ -1,0 +1,427 @@
+<!doctype html>
+<html lang="pl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-192.png">
+<title>Trening — tracker postępów</title>
+<style>
+:root{
+  --bg:#f4f7fb; --card:#ffffff; --ink:#0f172a; --muted:#64748b; --line:#dbe3ee;
+  --primary:#0f766e; --primary-2:#115e59; --accent:#f59e0b; --danger:#b91c1c;
+  --shadow:0 10px 30px rgba(15,23,42,.08); --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;-webkit-tap-highlight-color:transparent}
+body{min-height:100vh}
+button,input,select{font:inherit}
+button{cursor:pointer}
+.app{max-width:760px;margin:0 auto;padding:env(safe-area-inset-top) 14px calc(30px + env(safe-area-inset-bottom))}
+header{padding:18px 4px 10px;display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+h1{font-size:26px;line-height:1.05;margin:0 0 6px}
+.sub{margin:0;color:var(--muted);font-size:13px}
+.badge{font-size:12px;background:#e6fffb;color:var(--primary-2);border:1px solid #a7f3d0;padding:7px 10px;border-radius:999px;white-space:nowrap}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:16px;margin:12px 0}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.grid2{grid-template-columns:1fr}.app{padding-left:10px;padding-right:10px}}
+label{display:block;font-size:12px;font-weight:700;color:#475569;margin:0 0 6px}
+input,select{width:100%;border:1px solid #cbd5e1;background:#fff;color:var(--ink);border-radius:12px;padding:12px 13px;outline:none}
+input:focus,select:focus{border-color:var(--primary);box-shadow:0 0 0 3px rgba(15,118,110,.10)}
+.day-tabs{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:12px}
+.day-btn{border:1px solid #cbd5e1;background:#fff;padding:11px;border-radius:12px;font-weight:800;color:#475569}
+.day-btn.active{background:var(--primary);border-color:var(--primary);color:#fff}
+.plan{margin-top:12px;background:#f8fafc;border:1px dashed #cbd5e1;border-radius:14px;padding:12px}
+.plan strong{display:block;font-size:15px;margin-bottom:5px}.plan small{color:var(--muted);line-height:1.45}
+.section-title{font-size:17px;margin:0 0 12px}
+.primary{border:0;background:var(--primary);color:#fff;border-radius:12px;padding:12px 16px;font-weight:800}
+.primary:active{background:var(--primary-2);transform:translateY(1px)}
+.secondary{border:1px solid #cbd5e1;background:#fff;color:#334155;border-radius:12px;padding:11px 14px;font-weight:700}
+.danger{border:1px solid #fecaca;background:#fff;color:var(--danger);border-radius:10px;padding:8px 10px;font-size:12px;font-weight:700}
+.save-row{display:flex;gap:10px;margin-top:12px}.save-row>*{flex:1}
+.timer-wrap{text-align:center}
+.timer{width:190px;height:190px;margin:4px auto 14px;border-radius:50%;display:grid;place-items:center;background:conic-gradient(var(--primary) 100%,#e2e8f0 0);position:relative;box-shadow:inset 0 0 0 1px #dbe3ee}
+.timer::after{content:"";position:absolute;inset:13px;border-radius:50%;background:var(--card)}
+.timer-inner{position:relative;z-index:1}.timer-value{font-variant-numeric:tabular-nums;font-size:43px;font-weight:900;letter-spacing:-1px}.timer-label{font-size:12px;color:var(--muted);margin-top:2px}
+.timer-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.timer-adjust{display:flex;justify-content:center;gap:8px;margin-top:8px}
+.timer-adjust button{min-width:84px}
+.counter-box{display:none}
+.tap-pad{width:100%;min-height:240px;border:0;border-radius:20px;background:linear-gradient(145deg,#0f766e,#0f5e59);color:white;display:grid;place-items:center;touch-action:manipulation;user-select:none;box-shadow:0 14px 30px rgba(15,118,110,.20)}
+.tap-pad:active{transform:scale(.995)}
+.tap-count{font-size:78px;font-weight:950;line-height:1;font-variant-numeric:tabular-nums}.tap-help{font-size:14px;opacity:.9;margin-top:8px}.tap-actions{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-top:10px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}.stat{background:#f8fafc;border:1px solid #e2e8f0;border-radius:13px;padding:10px;text-align:center}.stat b{display:block;font-size:19px}.stat span{font-size:11px;color:var(--muted)}
+.chart{width:100%;height:150px;border:1px solid #e2e8f0;border-radius:12px;background:#fff;overflow:hidden}
+.chart svg{width:100%;height:100%;display:block}.chart-empty{height:100%;display:grid;place-items:center;color:var(--muted);font-size:13px;text-align:center;padding:20px}
+.history-list{display:flex;flex-direction:column;gap:8px}.history-item{display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center;border:1px solid #e2e8f0;border-radius:12px;padding:10px 11px}.history-main{font-weight:800}.history-meta{font-size:12px;color:var(--muted);margin-top:3px}.empty{color:var(--muted);font-size:13px;padding:8px 0}
+.footer-actions{display:flex;gap:8px;flex-wrap:wrap}.footer-actions button{flex:1;min-width:135px}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom));transform:translateX(-50%) translateY(20px);background:#0f172a;color:#fff;padding:10px 14px;border-radius:999px;font-size:13px;opacity:0;pointer-events:none;transition:.2s;z-index:10;white-space:nowrap}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+.flash{animation:flash .6s 2}@keyframes flash{50%{background:#fef3c7}}
+.hidden{display:none!important}
+.custom-tools{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}.custom-tools button{flex:1;min-width:180px}.custom-form{margin-top:12px;padding-top:12px;border-top:1px solid #e2e8f0}.custom-form .grid2{margin-bottom:10px}.custom-note{font-size:12px;color:var(--muted);margin:6px 0 0}.plan-actions{margin-top:10px}.plan-actions button{width:100%}
+</style>
+</head>
+<body>
+<div class="app" id="app">
+  <header>
+    <div><h1>Trening</h1><p class="sub">Serie, ciężar, powtórzenia, przerwy i postęp</p></div>
+    <div class="badge">offline • zapis lokalny</div>
+  </header>
+
+  <section class="card">
+    <div class="day-tabs">
+      <button class="day-btn active" data-day="1">I DZIEŃ</button>
+      <button class="day-btn" data-day="2">II DZIEŃ</button>
+    </div>
+    <div class="grid2">
+      <div><label for="date">Data treningu</label><input id="date" type="date"></div>
+      <div><label for="exercise">Ćwiczenie</label><select id="exercise"></select></div>
+    </div>
+    <div class="plan" id="planInfo"></div>
+    <div class="custom-tools">
+      <button id="showCustomForm" class="secondary">+ Dodaj własne ćwiczenie</button>
+    </div>
+    <div id="customForm" class="custom-form hidden">
+      <div class="grid2">
+        <div><label for="customName">Nazwa ćwiczenia</label><input id="customName" type="text" maxlength="80" placeholder="np. Wiosłowanie hantlem"></div>
+        <div><label for="customGroup">Grupa mięśniowa</label><input id="customGroup" type="text" maxlength="60" placeholder="np. grzbiet"></div>
+      </div>
+      <div class="grid2">
+        <div><label for="customDay">Dzień</label><select id="customDay"><option value="1">I dzień</option><option value="2">II dzień</option><option value="0">Oba dni</option></select></div>
+        <div><label for="customMode">Sposób zapisu</label><select id="customMode"><option value="normal">Ciężar + powtórzenia</option><option value="counter">Licznik dotykowy</option></select></div>
+      </div>
+      <div class="grid2">
+        <div><label for="customSets">Liczba serii</label><input id="customSets" type="number" min="1" max="20" step="1" value="3"></div>
+        <div><label for="customTarget">Plan powtórzeń</label><input id="customTarget" type="text" maxlength="20" value="12" placeholder="np. 12 lub max"></div>
+      </div>
+      <div class="grid2">
+        <div><label for="customRest">Przerwa [sekundy]</label><input id="customRest" type="number" min="0" max="1800" step="15" value="90"></div>
+        <div></div>
+      </div>
+      <div class="save-row"><button id="saveCustomExercise" class="primary">Dodaj ćwiczenie</button><button id="cancelCustomExercise" class="secondary">Anuluj</button></div>
+      <p class="custom-note">Własne ćwiczenia są zapisywane lokalnie razem z aplikacją. Dla ćwiczeń z licznikiem dotykowym każde dotknięcie pola zwiększa wynik o 1.</p>
+    </div>
+  </section>
+
+  <section class="card" id="entryCard">
+    <h2 class="section-title">Zapis serii</h2>
+    <div id="normalEntry">
+      <div class="grid2">
+        <div><label for="weight">Ciężar [kg]</label><input id="weight" type="number" inputmode="decimal" min="0" step="0.5" placeholder="np. 60"></div>
+        <div><label for="reps">Powtórzenia</label><input id="reps" type="number" inputmode="numeric" min="0" step="1" placeholder="np. 12"></div>
+      </div>
+      <div class="save-row"><button id="saveSet" class="primary">Zapisz serię</button></div>
+    </div>
+
+    <div id="counterEntry" class="counter-box">
+      <button id="tapPad" class="tap-pad" aria-label="Dodaj jedno powtórzenie">
+        <div><div class="tap-count" id="tapCount">0</div><div class="tap-help">DOTKNIJ, ABY DODAĆ +1</div></div>
+      </button>
+      <div class="tap-actions">
+        <button id="undoTap" class="secondary">−1</button>
+        <button id="resetTap" class="secondary">Reset</button>
+        <button id="saveCounter" class="primary">Zapisz</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="card timer-wrap" id="timerCard">
+    <h2 class="section-title">Przerwa</h2>
+    <div class="timer" id="timerRing"><div class="timer-inner"><div class="timer-value" id="timerValue">01:30</div><div class="timer-label" id="timerPreset">plan: 1:30</div></div></div>
+    <div class="timer-actions">
+      <button id="timerToggle" class="primary">Start przerwy</button>
+      <button id="timerReset" class="secondary">Reset</button>
+    </div>
+    <div class="timer-adjust"><button id="minus15" class="secondary">−15 s</button><button id="plus15" class="secondary">+15 s</button></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Postęp — wybrane ćwiczenie</h2>
+    <div class="stats">
+      <div class="stat"><b id="statBest">—</b><span id="statBestLabel">najlepszy ciężar</span></div>
+      <div class="stat"><b id="statReps">—</b><span>najwięcej powt.</span></div>
+      <div class="stat"><b id="statSets">0</b><span>zapisanych serii</span></div>
+    </div>
+    <div class="chart" id="chart"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Dzisiejsze serie</h2>
+    <div id="history" class="history-list"></div>
+  </section>
+
+  <section class="card">
+    <h2 class="section-title">Dane</h2>
+    <div class="footer-actions">
+      <button id="exportCsv" class="secondary">Eksport CSV</button>
+      <button id="backupJson" class="secondary">Kopia JSON</button>
+      <button id="clearData" class="danger">Wyczyść dane</button>
+    </div>
+    <p class="sub" style="margin-top:10px">Dane treningowe są przechowywane wyłącznie w pamięci tej przeglądarki (localStorage).</p>
+  </section>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const EXERCISES = [
+    // DZIEŃ I
+    {id:'d1-1a',day:1,group:'klatka / grzbiet',name:'Wyciskanie sztangi na płaskiej ławeczce',sets:3,rest:120,target:'12',pair:'Podciąganie na drążku szeroko nachwytem do klatki'},
+    {id:'d1-1b',day:1,group:'klatka / grzbiet',name:'Podciąganie na drążku szeroko nachwytem do klatki',sets:3,rest:120,target:'max',pair:'Wyciskanie sztangi na płaskiej ławeczce'},
+    {id:'d1-2a',day:1,group:'klatka / grzbiet',name:'Wyciskanie sztangielek na skośnej ławeczce ze skrętem 30°',sets:3,rest:90,target:'10',pair:'Przyciąganie drążka wyciągu szeroko do karku'},
+    {id:'d1-2b',day:1,group:'klatka / grzbiet',name:'Przyciąganie drążka wyciągu szeroko do karku',sets:3,rest:90,target:'10',pair:'Wyciskanie sztangielek na skośnej ławeczce ze skrętem 30°'},
+    {id:'d1-3a',day:1,group:'klatka / grzbiet',name:'Wyciskanie sztangi na suwnicy na skośnej ławeczce wąsko',sets:3,rest:90,target:'12',pair:'Ściąganie sznurka wyciągu pod siebie w opadzie tułowia'},
+    {id:'d1-3b',day:1,group:'klatka / grzbiet',name:'Ściąganie sznurka wyciągu pod siebie w opadzie tułowia',sets:3,rest:90,target:'12',pair:'Wyciskanie sztangi na suwnicy na skośnej ławeczce wąsko'},
+    {id:'d1-4a',day:1,group:'klatka / grzbiet',name:'Rozpiętki na skośnej ławeczce 15°',sets:3,rest:90,target:'15',pair:'Przyciąganie sztangi w opadzie tułowia do brzucha'},
+    {id:'d1-4b',day:1,group:'klatka / grzbiet',name:'Przyciąganie sztangi w opadzie tułowia do brzucha',sets:3,rest:90,target:'12',pair:'Rozpiętki na skośnej ławeczce 15°'},
+    {id:'d1-5a',day:1,group:'klatka / grzbiet',name:'Przenoszenie sztangielki za głowę',sets:3,rest:90,target:'15',pair:'Przyciąganie sztangielki do brzucha jednorącz w oparciu o ławeczkę'},
+    {id:'d1-5b',day:1,group:'klatka / grzbiet',name:'Przyciąganie sztangielki do brzucha jednorącz w oparciu o ławeczkę',sets:3,rest:90,target:'10',pair:'Przenoszenie sztangielki za głowę'},
+    {id:'d1-6a',day:1,group:'nogi',name:'Przysiady ze sztangą na suwnicy',sets:3,rest:60,target:'12',pair:'Wyprosty podudzi w siadzie na maszynie'},
+    {id:'d1-6b',day:1,group:'nogi',name:'Wyprosty podudzi w siadzie na maszynie',sets:3,rest:60,target:'15',pair:'Przysiady ze sztangą na suwnicy'},
+    {id:'d1-7a',day:1,group:'nogi',name:'Martwy ciąg o prostych nogach ze sztangą',sets:3,rest:60,target:'12',pair:'Uginanie podudzi w leżeniu przodem na maszynie'},
+    {id:'d1-7b',day:1,group:'nogi',name:'Uginanie podudzi w leżeniu przodem na maszynie',sets:3,rest:60,target:'15',pair:'Martwy ciąg o prostych nogach ze sztangą'},
+    {id:'d1-8a',day:1,group:'nogi',name:'Łydka siedząc',sets:3,rest:60,target:'20',pair:'Łydka stojąc'},
+    {id:'d1-8b',day:1,group:'nogi',name:'Łydka stojąc',sets:3,rest:60,target:'20',pair:'Łydka siedząc'},
+    {id:'d1-9a',day:1,group:'brzuch',name:'Unoszenie prostych nóg do poziomu w zwisie na poręczach',sets:4,rest:60,target:'max',pair:'Scyzoryk'},
+    {id:'d1-9b',day:1,group:'brzuch',name:'Scyzoryk',sets:4,rest:60,target:'20',pair:'Unoszenie prostych nóg do poziomu w zwisie na poręczach'},
+
+    // DZIEŃ II
+    {id:'d2-1a',day:2,group:'naramienne',name:'Wyciskanie sztangielek w siadzie opartym na ławeczce',sets:3,rest:90,target:'10',pair:'Unoszenie sztangielek bokiem stojąc'},
+    {id:'d2-1b',day:2,group:'naramienne',name:'Unoszenie sztangielek bokiem stojąc',sets:3,rest:90,target:'12',pair:'Wyciskanie sztangielek w siadzie opartym na ławeczce'},
+    {id:'d2-2a',day:2,group:'naramienne',name:'Wyciskanie sztangielek sprzed klatki w siadzie opartym na ławeczce',sets:3,rest:90,target:'12',pair:'Unoszenie sztangielek przodem stojąc'},
+    {id:'d2-2b',day:2,group:'naramienne',name:'Unoszenie sztangielek przodem stojąc',sets:3,rest:90,target:'12',pair:'Wyciskanie sztangielek sprzed klatki w siadzie opartym na ławeczce'},
+    {id:'d2-3a',day:2,group:'naramienne',name:'W opadzie tułowia unoszenie sztangielek bokiem',sets:3,rest:90,target:'12',pair:'Przyciąganie drążka dolnego wyciągu do brody wzdłuż tułowia'},
+    {id:'d2-3b',day:2,group:'naramienne',name:'Przyciąganie drążka dolnego wyciągu do brody wzdłuż tułowia',sets:3,rest:90,target:'10',pair:'W opadzie tułowia unoszenie sztangielek bokiem'},
+    {id:'d2-4a',day:2,group:'biceps / triceps',name:'Unoszenie przedramion ze sztangielkami naprzemianstronnie od chwytu neutralnego do podchwytu',sets:3,rest:90,target:'12',pair:'Pompki szwedzkie na poręczach'},
+    {id:'d2-4b',day:2,group:'biceps / triceps',name:'Pompki szwedzkie na poręczach',sets:3,rest:90,target:'max',pair:'Unoszenie przedramion ze sztangielkami naprzemianstronnie',counter:true},
+    {id:'d2-5a',day:2,group:'biceps / triceps',name:'Unoszenie przedramion ze sztangą trzymaną nachwytem',sets:3,rest:90,target:'12',pair:'Wyciskanie francuskie sztangielką oburącz'},
+    {id:'d2-5b',day:2,group:'biceps / triceps',name:'Wyciskanie francuskie sztangielką oburącz',sets:3,rest:90,target:'12',pair:'Unoszenie przedramion ze sztangą trzymaną nachwytem'},
+    {id:'d2-6a',day:2,group:'biceps / triceps',name:'Unoszenie przedramion z drążkiem dolnego wyciągu',sets:3,rest:90,target:'12',pair:'Wyprosty przedramion z drążkiem górnego wyciągu podchwyt'},
+    {id:'d2-6b',day:2,group:'biceps / triceps',name:'Wyprosty przedramion z drążkiem górnego wyciągu — podchwyt',sets:3,rest:90,target:'12',pair:'Unoszenie przedramion z drążkiem dolnego wyciągu'},
+    {id:'d2-7a',day:2,group:'triceps / biceps',name:'Modlitewnik',sets:3,rest:90,target:'12',pair:'Wyprosty przedramion ze sznurkiem górnego wyciągu'},
+    {id:'d2-7b',day:2,group:'triceps / biceps',name:'Wyprosty przedramion ze sznurkiem górnego wyciągu',sets:3,rest:90,target:'12',pair:'Modlitewnik'},
+    {id:'d2-8a',day:2,group:'brzuch',name:'Unoszenie prostych nóg do poziomu w zwisie na poręczach',sets:4,rest:60,target:'max',pair:'Scyzoryk'},
+    {id:'d2-8b',day:2,group:'brzuch',name:'Scyzoryk',sets:4,rest:60,target:'20',pair:'Unoszenie prostych nóg do poziomu w zwisie na poręczach'},
+
+    // DODATKOWE — dostępne w obu dniach
+    {id:'pushups',day:0,group:'klatka / triceps',name:'Pompki',sets:3,rest:90,target:'max',pair:'—',counter:true,extra:true}
+  ];
+
+  const LS_KEY = 'trening_tracker_v1';
+  const CUSTOM_KEY = 'trening_tracker_custom_exercises_v1';
+  let day = 1;
+  let logs = loadLogs();
+  let customExercises = loadCustomExercises();
+  let tapCount = 0;
+  let timerDuration = 90;
+  let timerRemaining = 90;
+  let timerEndAt = null;
+  let timerInterval = null;
+  let timerRunning = false;
+
+  const $ = s => document.querySelector(s);
+  const $$ = s => [...document.querySelectorAll(s)];
+  const exerciseEl = $('#exercise'), dateEl = $('#date'), planInfo = $('#planInfo');
+  const weightEl = $('#weight'), repsEl = $('#reps');
+
+  function isoToday(){
+    const d = new Date();
+    return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10);
+  }
+  dateEl.value = isoToday();
+
+  function loadLogs(){
+    try { const x = JSON.parse(localStorage.getItem(LS_KEY) || '[]'); return Array.isArray(x) ? x : []; }
+    catch(e){ return []; }
+  }
+  function saveLogs(){ localStorage.setItem(LS_KEY, JSON.stringify(logs)); }
+  function loadCustomExercises(){
+    try { const x = JSON.parse(localStorage.getItem(CUSTOM_KEY) || '[]'); return Array.isArray(x) ? x : []; }
+    catch(e){ return []; }
+  }
+  function saveCustomExercises(){ localStorage.setItem(CUSTOM_KEY, JSON.stringify(customExercises)); }
+  function allExercises(){ return [...EXERCISES, ...customExercises]; }
+  function selectedExercise(){ return allExercises().find(x => x.id === exerciseEl.value) || allExercises().find(x=>x.day===day || x.day===0); }
+  function fmtRest(sec){ const m=Math.floor(sec/60), s=sec%60; return s ? `${m}:${String(s).padStart(2,'0')} min` : `${m} min`; }
+  function fmtTimer(sec){ sec=Math.max(0,Math.ceil(sec)); return `${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`; }
+  function esc(s){ return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c])); }
+  function toast(text){ const t=$('#toast'); t.textContent=text; t.classList.add('show'); clearTimeout(t._hide); t._hide=setTimeout(()=>t.classList.remove('show'),1800); }
+
+  function renderExercises(keepId){
+    const list = allExercises().filter(x=>x.day===day || x.day===0);
+    const plan = list.filter(x=>!x.custom && !x.extra);
+    const extras = list.filter(x=>x.custom || x.extra);
+    let html='';
+    if(plan.length) html += `<optgroup label="Plan treningowy">${plan.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</optgroup>`;
+    if(extras.length) html += `<optgroup label="Dodatkowe / własne">${extras.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join('')}</optgroup>`;
+    exerciseEl.innerHTML = html;
+    if(keepId && list.some(x=>x.id===keepId)) exerciseEl.value=keepId;
+    onExerciseChange();
+  }
+
+  function onExerciseChange(){
+    const ex=selectedExercise(); if(!ex) return;
+    const pairLine = ex.pair && ex.pair!=='—' ? `<br>Ćwiczenie w parze: ${esc(ex.pair)}` : '';
+    const typeLine = ex.counter ? '<br>Sposób zapisu: licznik dotykowy' : '';
+    const customActions = ex.custom ? `<div class="plan-actions"><button class="danger" id="deleteCustomExercise">Usuń własne ćwiczenie</button></div>` : '';
+    planInfo.innerHTML = `<strong>${esc(ex.name)}</strong><small>Grupa: ${esc(ex.group || 'inne')} • Plan: ${ex.sets} serie × ${esc(ex.target)} powt. • Przerwa: ${fmtRest(ex.rest)}${pairLine}${typeLine}</small>${customActions}`;
+    if(ex.custom){ const del=$('#deleteCustomExercise'); if(del) del.addEventListener('click',()=>removeCustomExercise(ex.id)); }
+    $('#normalEntry').classList.toggle('hidden', !!ex.counter);
+    $('#counterEntry').style.display = ex.counter ? 'block' : 'none';
+    tapCount=0; $('#tapCount').textContent='0';
+    setTimerPreset(ex.rest);
+    renderHistory(); renderProgress();
+  }
+
+  function showCustomForm(show=true){
+    $('#customForm').classList.toggle('hidden', !show);
+    if(show){ $('#customDay').value=String(day); setTimeout(()=>$('#customName').focus(),0); }
+  }
+  function addCustomExercise(){
+    const name=$('#customName').value.trim();
+    const group=$('#customGroup').value.trim() || 'inne';
+    const exDay=Number($('#customDay').value);
+    const sets=Math.max(1,Number($('#customSets').value)||3);
+    const rest=Math.max(0,Number($('#customRest').value)||0);
+    const target=$('#customTarget').value.trim() || '—';
+    const counter=$('#customMode').value==='counter';
+    if(!name){ toast('Wpisz nazwę ćwiczenia'); $('#customName').focus(); return; }
+    const id='custom-'+Date.now().toString(36)+'-'+Math.random().toString(36).slice(2,7);
+    const ex={id,day:exDay,group,name,sets,rest,target,pair:'—',counter,custom:true,extra:true};
+    customExercises.push(ex); saveCustomExercises();
+    if(exDay===1 || exDay===2){ day=exDay; $$('.day-btn').forEach(b=>b.classList.toggle('active',Number(b.dataset.day)===day)); }
+    $('#customName').value=''; $('#customGroup').value=''; $('#customSets').value='3'; $('#customTarget').value='12'; $('#customRest').value='90'; $('#customMode').value='normal';
+    showCustomForm(false); renderExercises(id); toast('Dodano własne ćwiczenie');
+  }
+  function removeCustomExercise(id){
+    const ex=customExercises.find(x=>x.id===id); if(!ex) return;
+    if(!confirm(`Usunąć ćwiczenie „${ex.name}” oraz jego zapisaną historię?`)) return;
+    customExercises=customExercises.filter(x=>x.id!==id); logs=logs.filter(x=>x.exerciseId!==id);
+    saveCustomExercises(); saveLogs(); renderExercises(); toast('Ćwiczenie usunięte');
+  }
+
+  function setTimerPreset(sec){
+    stopTimer(); timerDuration=sec; timerRemaining=sec; timerEndAt=null; updateTimerUI();
+    $('#timerPreset').textContent=`plan: ${fmtTimer(sec)}`;
+  }
+  function updateTimerUI(){
+    $('#timerValue').textContent=fmtTimer(timerRemaining);
+    const pct = timerDuration ? Math.max(0,Math.min(100,(timerRemaining/timerDuration)*100)) : 0;
+    $('#timerRing').style.background=`conic-gradient(var(--primary) ${pct}%, #e2e8f0 ${pct}%)`;
+    $('#timerToggle').textContent=timerRunning?'Pauza':'Start przerwy';
+  }
+  function timerTick(){
+    if(!timerRunning || !timerEndAt) return;
+    timerRemaining = Math.max(0, Math.ceil((timerEndAt-Date.now())/1000));
+    updateTimerUI();
+    if(timerRemaining<=0){
+      stopTimer(); updateTimerUI(); finishTimer();
+    }
+  }
+  function startTimer(){
+    if(timerRemaining<=0) timerRemaining=timerDuration;
+    timerRunning=true; timerEndAt=Date.now()+timerRemaining*1000;
+    clearInterval(timerInterval); timerInterval=setInterval(timerTick,250); updateTimerUI();
+  }
+  function stopTimer(){ timerRunning=false; timerEndAt=null; clearInterval(timerInterval); timerInterval=null; updateTimerUI(); }
+  function resetTimer(){ stopTimer(); timerRemaining=timerDuration; updateTimerUI(); }
+  function adjustTimer(delta){
+    if(timerRunning){ timerRemaining=Math.max(0,timerRemaining+delta); timerEndAt=Date.now()+timerRemaining*1000; }
+    else timerRemaining=Math.max(0,timerRemaining+delta);
+    if(timerRemaining>timerDuration) timerDuration=timerRemaining;
+    updateTimerUI();
+  }
+  function finishTimer(){
+    try{ if(navigator.vibrate) navigator.vibrate([180,80,180]); }catch(e){}
+    try{
+      const Ctx=window.AudioContext||window.webkitAudioContext; if(Ctx){ const ctx=new Ctx(),o=ctx.createOscillator(),g=ctx.createGain(); o.connect(g);g.connect(ctx.destination);o.frequency.value=880;g.gain.value=.08;o.start();o.stop(ctx.currentTime+.25); }
+    }catch(e){}
+    document.body.classList.add('flash'); setTimeout(()=>document.body.classList.remove('flash'),1300); toast('Koniec przerwy');
+  }
+
+  function nextSetNumber(exId,date){ return logs.filter(x=>x.exerciseId===exId&&x.date===date).length+1; }
+  function addLog(reps, weight){
+    const ex=selectedExercise(); const date=dateEl.value||isoToday();
+    logs.push({id:(crypto.randomUUID?crypto.randomUUID():Date.now()+'-'+Math.random()),date,day:ex.day,exerciseId:ex.id,exerciseName:ex.name,setNo:nextSetNumber(ex.id,date),weight:weight===''?null:Number(weight),reps:Number(reps),ts:Date.now()});
+    saveLogs(); renderHistory(); renderProgress(); toast('Seria zapisana');
+  }
+  function saveNormal(){
+    const reps=repsEl.value.trim(), weight=weightEl.value.trim();
+    if(reps==='' || Number(reps)<0){ toast('Wpisz liczbę powtórzeń'); repsEl.focus(); return; }
+    addLog(reps,weight); repsEl.value=''; repsEl.focus();
+  }
+  function saveCounter(){
+    if(tapCount<=0){ toast('Najpierw nalicz powtórzenia'); return; }
+    addLog(tapCount,''); tapCount=0; $('#tapCount').textContent='0';
+  }
+
+  function deleteLog(id){ logs=logs.filter(x=>x.id!==id); saveLogs(); renderHistory(); renderProgress(); }
+  function renderHistory(){
+    const ex=selectedExercise(), date=dateEl.value;
+    const arr=logs.filter(x=>x.exerciseId===ex.id&&x.date===date).sort((a,b)=>a.ts-b.ts);
+    const h=$('#history');
+    if(!arr.length){ h.innerHTML='<div class="empty">Brak zapisanych serii dla tego ćwiczenia w wybranym dniu.</div>'; return; }
+    h.innerHTML=arr.map(x=>`<div class="history-item"><div><div class="history-main">Seria ${x.setNo}: ${x.weight!=null ? `${x.weight} kg × ` : ''}${x.reps} powt.</div><div class="history-meta">${esc(x.exerciseName)}</div></div><button class="danger" data-del="${x.id}">Usuń</button></div>`).join('');
+    h.querySelectorAll('[data-del]').forEach(b=>b.addEventListener('click',()=>deleteLog(b.dataset.del)));
+  }
+
+  function renderProgress(){
+    const ex=selectedExercise(); const arr=logs.filter(x=>x.exerciseId===ex.id).sort((a,b)=>a.ts-b.ts);
+    $('#statSets').textContent=arr.length;
+    const weighted=arr.filter(x=>Number.isFinite(x.weight));
+    if(weighted.length){ $('#statBest').textContent=Math.max(...weighted.map(x=>x.weight))+' kg'; $('#statBestLabel').textContent='najlepszy ciężar'; }
+    else { $('#statBest').textContent=arr.length?Math.max(...arr.map(x=>x.reps)):'—'; $('#statBestLabel').textContent='najlepsza seria'; }
+    $('#statReps').textContent=arr.length?Math.max(...arr.map(x=>x.reps)):'—';
+
+    const chartSource = weighted.length ? weighted : arr;
+    const chartUnit = weighted.length ? ' kg' : ' powt.';
+    const byDate={};
+    chartSource.forEach(x=>{ const val=weighted.length?x.weight:x.reps; byDate[x.date]=Math.max(byDate[x.date]??-Infinity,val); });
+    const pts=Object.entries(byDate).sort((a,b)=>a[0].localeCompare(b[0])).slice(-12);
+    const chart=$('#chart');
+    if(pts.length<2){ chart.innerHTML='<div class="chart-empty">Wykres pojawi się po zapisaniu danych z co najmniej dwóch dat.</div>'; return; }
+    const W=600,H=150,pad=24, vals=pts.map(p=>p[1]), min=Math.min(...vals), max=Math.max(...vals), span=(max-min)||1;
+    const coords=pts.map((p,i)=>({x:pad+i*(W-2*pad)/(pts.length-1),y:H-pad-((p[1]-min)/span)*(H-2*pad),v:p[1],d:p[0]}));
+    const poly=coords.map(p=>`${p.x},${p.y}`).join(' ');
+    chart.innerHTML=`<svg viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="Wykres postępu"><line x1="${pad}" y1="${H-pad}" x2="${W-pad}" y2="${H-pad}" stroke="#cbd5e1"/><polyline fill="none" stroke="currentColor" stroke-width="4" points="${poly}" style="color:var(--primary)"/>${coords.map(p=>`<circle cx="${p.x}" cy="${p.y}" r="5" fill="currentColor" style="color:var(--primary)"><title>${p.d}: ${p.v}${chartUnit}</title></circle>`).join('')}</svg>`;
+  }
+
+  function exportCSV(){
+    const rows=[['data','dzien','cwiczenie','seria','ciezar_kg','powtorzenia'],...logs.sort((a,b)=>a.ts-b.ts).map(x=>[x.date,x.day,x.exerciseName,x.setNo,x.weight??'',x.reps])];
+    const csv=rows.map(r=>r.map(v=>'"'+String(v).replaceAll('"','""')+'"').join(';')).join('\n');
+    downloadBlob('\ufeff'+csv,'trening.csv','text/csv;charset=utf-8');
+  }
+  function backupJSON(){ downloadBlob(JSON.stringify({version:2,exportedAt:new Date().toISOString(),customExercises,logs},null,2),'trening-kopia.json','application/json'); }
+  function downloadBlob(content,name,type){ const blob=new Blob([content],{type}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000); }
+
+  $$('.day-btn').forEach(b=>b.addEventListener('click',()=>{
+    day=Number(b.dataset.day); $$('.day-btn').forEach(x=>x.classList.toggle('active',x===b)); renderExercises();
+  }));
+  exerciseEl.addEventListener('change',onExerciseChange);
+  $('#showCustomForm').addEventListener('click',()=>showCustomForm($('#customForm').classList.contains('hidden')));
+  $('#cancelCustomExercise').addEventListener('click',()=>showCustomForm(false));
+  $('#saveCustomExercise').addEventListener('click',addCustomExercise);
+  $('#customName').addEventListener('keydown',e=>{if(e.key==='Enter')addCustomExercise();});
+  dateEl.addEventListener('change',()=>{renderHistory();renderProgress();});
+  $('#saveSet').addEventListener('click',saveNormal);
+  repsEl.addEventListener('keydown',e=>{if(e.key==='Enter')saveNormal();});
+  $('#tapPad').addEventListener('pointerup',e=>{e.preventDefault();tapCount++;$('#tapCount').textContent=tapCount; try{navigator.vibrate&&navigator.vibrate(12)}catch(_){}});
+  $('#undoTap').addEventListener('click',()=>{tapCount=Math.max(0,tapCount-1);$('#tapCount').textContent=tapCount;});
+  $('#resetTap').addEventListener('click',()=>{tapCount=0;$('#tapCount').textContent='0';});
+  $('#saveCounter').addEventListener('click',saveCounter);
+  $('#timerToggle').addEventListener('click',()=>timerRunning?stopTimer():startTimer());
+  $('#timerReset').addEventListener('click',resetTimer);
+  $('#minus15').addEventListener('click',()=>adjustTimer(-15));
+  $('#plus15').addEventListener('click',()=>adjustTimer(15));
+  $('#exportCsv').addEventListener('click',exportCSV);
+  $('#backupJson').addEventListener('click',backupJSON);
+  $('#clearData').addEventListener('click',()=>{if(confirm('Usunąć wszystkie zapisane dane treningowe z tej przeglądarki?')){logs=[];saveLogs();renderHistory();renderProgress();toast('Dane usunięte');}});
+  document.addEventListener('visibilitychange',()=>{ if(!document.hidden && timerRunning) timerTick(); });
+
+  renderExercises();
+})();
+</script>
+<script>if ('serviceWorker' in navigator && location.protocol !== 'file:') { navigator.serviceWorker.register('./sw.js').catch(()=>{}); }</script>
+</body>
+</html>
